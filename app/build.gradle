@@ -33,4 +33,5 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.okhttp3:okhttp:4.1.1'
     implementation 'org.litepal.android:java:3.0.0'
+    implementation files('libs/HeWeather_Public_Android_V3.1.jar')
 }

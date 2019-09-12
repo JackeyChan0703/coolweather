@@ -6,7 +6,16 @@ public class County extends LitePalSupport {
     private int id;
     private String countyName;
     private String weatherId;
+    private String countyCode;
     private int cityId;
+
+    public String getCountyCode() {
+        return countyCode;
+    }
+
+    public void setCountyCode(String countyCode) {
+        this.countyCode = countyCode;
+    }
 
     public int getId() {
         return id;

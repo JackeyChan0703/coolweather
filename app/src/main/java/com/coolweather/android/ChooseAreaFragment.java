@@ -1,6 +1,7 @@
 package com.coolweather.android;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -66,18 +67,21 @@ public class ChooseAreaFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (currentlevel == LEVEL_PROVINCE) {
-                    selectedProvince = provinceList.get(position);
-                    //查询城市
-                    queryCities();
-                } else if (currentlevel == LEVEL_CITY) {
-                    selectedCity = cityList.get(position);
-                    //查询县
-                    queryCounties();
-                }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            if (currentlevel == LEVEL_PROVINCE) {
+                selectedProvince = provinceList.get(position);
+                //查询城市
+                queryCities();
+            } else if (currentlevel == LEVEL_CITY) {
+                selectedCity = cityList.get(position);
+                //查询县
+                queryCounties();
+            }else if(currentlevel == LEVEL_COUNTY){
+                String weatherId = countyList.get(position).getWeatherId();
+                Intent intent = new Intent(getActivity(),WeatherActivity.class);
+                intent.putExtra("weatherId",weatherId);
+                startActivity(intent);
+                getActivity().finish();
             }
         });
         backButton.setOnClickListener(view -> {
