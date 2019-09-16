@@ -1,13 +1,18 @@
 package com.coolweather.android;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -49,7 +54,12 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingPicImg;
+    public SwipeRefreshLayout swipeRefresh;
+    private String mWeatherId;
+    public DrawerLayout drawerLayout;
+    private Button navButton;
 
+    @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +82,11 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = findViewById(R.id.car_wash_text);
         sportText = findViewById(R.id.sport_text);
         bingPicImg = findViewById(R.id.bing_pic_img);
+        swipeRefresh = findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeColors(R.color.colorPrimary);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navButton = findViewById(R.id.nav_button);
+        navButton.setOnClickListener((view -> drawerLayout.openDrawer(GravityCompat.START)));
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = pref.getString("weather", null);
         String bingPic = pref.getString("bing_pic",null);
@@ -83,6 +98,7 @@ public class WeatherActivity extends AppCompatActivity {
         if (weatherString != null) {
             //当前有缓存，直接解析
             Weather weather = Utility.handleWeatherReponse(weatherString);
+            mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
             //当前没有缓存，去服务器查询
@@ -94,6 +110,14 @@ public class WeatherActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        //刷新
+        swipeRefresh.setOnRefreshListener(()->{
+            try {
+                requestWeather(mWeatherId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 
@@ -149,7 +173,7 @@ public class WeatherActivity extends AppCompatActivity {
      *
      * @param weatherId 城市或地区id
      */
-    private void requestWeather(final String weatherId) throws IOException {
+    public void requestWeather(final String weatherId) throws IOException {
         Weather weather = new Weather();
         String weatherNowUrl = "https://free-api.heweather.net/s6/weather/now?location=" + weatherId + "&key=c5fefbe84ab54b939bbc4fbec75d0c24";
         String weatherForecastUrl = "https://free-api.heweather.net/s6/weather/forecast?location=" + weatherId + "&key=c5fefbe84ab54b939bbc4fbec75d0c24";
@@ -173,6 +197,7 @@ public class WeatherActivity extends AppCompatActivity {
                 if (weatherForecast != null && weatherForecast.status.equals("ok")) {
                     if (weatherForecast != null && weatherForecast.status.equals("ok")) {
                         weather.setForecastList(weatherForecast.forecastList);
+                        mWeatherId = weather.basic.weatherId;
                     }
                 } else {
                     Toast.makeText(WeatherActivity.this, "获取天气现在信息失败", Toast.LENGTH_SHORT).show();
@@ -187,6 +212,7 @@ public class WeatherActivity extends AppCompatActivity {
                 }
                 runOnUiThread(()->{
                     showWeatherInfo(weather);
+                    swipeRefresh.setRefreshing(false);
                 } );
                 loadBingPic();
 
